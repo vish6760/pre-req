@@ -1,0 +1,7 @@
+
+---
+- name: Update the packages
+  import_tasks: setup.yml
+  
+- name: Handle reporting and reboot control
+  import_tasks: report.yml

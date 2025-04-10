@@ -1,0 +1,7 @@
+---
+# Entry point for the logrotate-config role
+- name: Installing logrotate and configuring audit log rotation
+  import_tasks: setup.yml
+  
+- name: Tasks for testing and reporting logrotate status
+  import_tasks: report.yml

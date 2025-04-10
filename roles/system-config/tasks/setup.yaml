@@ -1,0 +1,161 @@
+# setup.yaml
+---
+- name: Create report directory if not exists
+  file:
+    path: "{{ report_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Backup /etc/hosts
+  copy:
+    src: /etc/hosts
+    dest: "/etc/hosts.orig-{{ backup_date }}"
+    remote_src: yes
+
+- name: Overwrite /etc/hosts with custom content
+  copy:
+    dest: /etc/hosts
+    content: |
+      # Your system has configured 'manage_etc_hosts' as True.
+      # As a result, if you wish for changes to this file to persist
+      # then you will need to either
+      # a.) make changes to the master file in /etc/cloud/templates/hosts.debian.tmpl
+      # b.) change or remove the value of 'manage_etc_hosts' in
+      #     /etc/cloud/cloud.cfg or cloud-config from user-data
+      #
+
+      127.0.0.1 localhost.localdomain localhost
+      127.0.0.1 localhost4.localdomain4 localhost4
+
+      # The following lines are desirable for IPv6 capable hosts
+      ::1 localhost ip6-localhost ip6-loopback
+      ff02::1 ip6-allnodes
+      ff02::2 ip6-allrouters
+
+      10.26.64.72  attincdemasv0
+      10.26.64.51  attincdemasv1
+      #attincdemasv2
+      #attincdewrkv0
+    mode: '0644'
+
+- name: Backup /etc/sysctl.conf
+  copy:
+    src: /etc/sysctl.conf
+    dest: "/etc/sysctl.conf.orig-{{ backup_date }}"
+    remote_src: yes
+
+- name: Copy the pre-staged sysctl.conf file
+  copy:
+    src: "{{ playbook_dir }}/../files/staged-sysctl.conf"
+    dest: /etc/sysctl.conf
+    remote_src: no
+
+- name: Backup netplan config
+  copy:
+    src: /etc/netplan/00-installer-config.yaml
+    dest: "/etc/netplan/00-installer-config.yaml.orig-{{ backup_date }}"
+    remote_src: yes
+
+- name: Disable systemd-resolved
+  systemd:
+    name: systemd-resolved
+    enabled: no
+    state: stopped
+
+- name: Remove /etc/resolv.conf if symlink
+  file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: Create new /etc/resolv.conf with custom DNS
+  copy:
+    dest: /etc/resolv.conf
+    content: |
+      ; Created by Ansible - do not edit.
+      nameserver 10.56.240.213
+      nameserver 10.56.240.214
+      nameserver 127.0.0.53
+      search acbsystem.local
+  diff: yes
+
+- name: Disable unattended upgrades
+  replace:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    regexp: '1'
+    replace: '0'
+
+- name: Check if audit backlog limit is still set to 8192
+  shell: grep -q '^-b 8192' /etc/audit/rules.d/audit.rules
+  register: audit_limit_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Update audit backlog limit from 8192 to 16384 in audit.rules
+  replace:
+    path: /etc/audit/rules.d/audit.rules
+    regexp: '^-b 8192'
+    replace: '-b 16384'
+  when: audit_limit_check.rc == 0
+
+- name: Comment out update_etc_hosts in cloud.cfg
+  replace:
+    path: /etc/cloud/cloud.cfg
+    #regexp: '- update_etc_hosts'
+    regexp: '^(.*)-\s*update_etc_hosts'
+    replace: '# - update_etc_hosts'
+
+- name: Remove existing GRUB_CMDLINE_LINUX entries
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    state: absent
+
+- name: Add consolidated GRUB_CMDLINE_LINUX line
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    line: 'GRUB_CMDLINE_LINUX="quiet splash ipv6.disable=1 net.ifnames=0 apparmor=1 security=apparmor audit=1 audit_backlog_limit=16384"'
+    create: yes
+
+- name: Regenerate GRUB config
+  command: update-grub2
+  when: ansible_facts['os_family'] == "Debian"
+  register: grub_result
+  ignore_errors: yes
+
+- name: Save GRUB result to file
+  copy:
+    content: "{{ grub_result.stdout | default('') }}"
+    dest: "{{ report_dir }}/{{ inventory_hostname }}_grub_result.log"
+    mode: '0644'
+
+- name: Ensure containerd systemd drop-in directory exists
+  file:
+    path: /etc/systemd/system/containerd.service.d
+    state: directory
+    mode: '0755'
+
+- name: Add proxy environment variables to /etc/environment
+  blockinfile:
+    path: /etc/environment
+    block: |
+      http_proxy="http://10.56.224.108:3128"
+      https_proxy="http://10.56.224.108:3128"
+      HTTP_PROXY="http://10.56.224.108:3128"
+      HTTPS_PROXY="http://10.56.224.108:3128"
+      no_proxy=localhost,127.0.0.1,127.0.0.0,127.0.1.1,127.0.1.1,local.home,aks-attincde.acbsystem.local,10.26.64.0/24,10.26.64.10,10.10.0.0/15,10.16.0.0/16,10.16.0.1,10.26.64.110,aks-attincde-harbor.acbsystem.local,aks-attincde-argocd.acbsystem.local,aks-attincde-grafana.acbsystem.local,*.acb.vn,aks-attincde-alertmanager.acbsystem.local,aks-attincde-prometheus.acbsystem.local,aks.acb.vn,10.24.100.10,registry.acb.com.vn
+      NO_PROXY=localhost,127.0.0.1,127.0.0.0,127.0.1.1,127.0.1.1,local.home,aks-attincde.acbsystem.local,10.26.64.0/24,10.26.64.10,10.10.0.0/15,10.16.0.0/16,10.16.0.1,10.26.64.110,aks-attincde-harbor.acbsystem.local,aks-attincde-argocd.acbsystem.local,aks-attincde-grafana.acbsystem.local,*.acb.vn,aks-attincde-alertmanager.acbsystem.local,aks-attincde-prometheus.acbsystem.local,aks.acb.vn,10.24.100.10,registry.acb.com.vn
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED PROXY BLOCK"
+
+- name: Create containerd proxy environment config
+  copy:
+    dest: /etc/systemd/system/containerd.service.d/http-proxy.conf
+    content: |
+      [Service]
+      EnvironmentFile=/etc/environment
+    mode: '0644'
+
+- name: Reload systemd daemon
+  command: systemctl daemon-reexec
+  register: reload_result
+  ignore_errors: yes
