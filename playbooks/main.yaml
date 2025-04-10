@@ -3,9 +3,9 @@
   hosts: all
   become: yes
   roles:
-    - role: system-config
-    - role: resize-disk
-    - role: audit-logrotate
-    - role: package-update
-    - role: final-report
-    - role: apiserver-config
+    - { role: package-update, tags: ['package-update'] }
+    - { role: system-config, tags: ['system-config'] }
+    - { role: resize-disk, tags: ['resize-disk'] }
+    - { role: audit-logrotate, tags: ['audit-logrotate'] }
+    - { role: apiserver-config, tags: ['apiserver-config'] }
+    - { role: final-report, tags: ['final-report'] }
