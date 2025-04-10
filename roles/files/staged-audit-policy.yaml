@@ -1,0 +1,45 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+  # Log all requests related to authentication and authorization
+  - level: Metadata
+    resources:
+      - group: ""
+        resources: ["pods", "secrets", "configmaps", "services", "namespaces"]
+    omitStages:
+      - RequestReceived
+      - ResponseStarted
+    includeStages:
+      - ResponseComplete
+
+  # Log all policy-related changes
+  - level: Metadata
+    resources:
+      - group: "policy"
+        resources: ["networkpolicies"]
+    omitStages:
+      - RequestReceived
+      - ResponseStarted
+    includeStages:
+      - ResponseComplete
+
+  # Log all changes made to critical resources
+  - level: RequestResponse
+    resources:
+      - group: "apps"
+        resources: ["deployments", "statefulsets"]
+    # Log all request/response details for critical resources
+    includeStages:
+      - RequestReceived
+      - ResponseStarted
+      - ResponseComplete
+
+  # Log all privilege escalations
+  - level: Metadata
+    resources:
+      - group: "authorization.k8s.io"
+        resources: ["subjectaccessreviews", "selfsubjectaccessreviews", "localsubjectaccessreviews"]
+    includeStages:
+      - RequestReceived
+      - ResponseStarted
+      - ResponseComplete

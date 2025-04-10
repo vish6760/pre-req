@@ -1,0 +1,34 @@
+# setup.yaml
+---
+- name: Resize partition 3 on /dev/vda
+  shell: |
+    parted {{ disk_device }} ---pretend-input-tty <<EOF
+    resizepart "{{ partition_number }}" "100%"
+    Fix
+    "{{ partition_number }}"
+    "100%"
+    quit
+    EOF
+  args:
+    executable: /bin/bash
+  register: resizepart_output
+  ignore_errors: yes
+
+- name: Display partition table after resize
+  command: lsblk
+  register: lsblk_output
+
+- name: Resize physical volume
+  command: pvresize {{ disk_device }}{{ partition_number }}
+  register: pvresize_output
+  ignore_errors: yes
+
+- name: Resize logical volume to use all free space and resize filesystem
+  command: lvresize -r -l +100%FREE {{ lv_path }}
+  register: lvresize_output
+  ignore_errors: yes
+
+- name: Resize filesystem explicitly (in case it's not done by -r)
+  command: resize2fs -p {{ lv_path }}
+  register: resizefs_output
+  ignore_errors: yes
