@@ -1,6 +1,6 @@
 # 📦 MPK Dev Cluster Pre-Requisites – Ansible Automation
 
-This repository contains Ansible playbooks and roles to automate the setup of pre-requisites for onboarding nodes into the MPK management cluster.
+This repository contains Ansible playbooks and roles to automate the prerequisites for onboarding nodes into the MPK management cluster.
 
 ---
 
