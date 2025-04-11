@@ -4,6 +4,7 @@
   hosts: all
   become: yes
   tasks:
+
     - name: Include the system-config role
       import_role:
         name: system-config
@@ -18,11 +19,6 @@
       import_role:
         name: package-update
       tags: package-update
-
-    - name: Include the resize-disk role
-      import_role:
-        name: resize-disk
-      tags: resize-disk
 
     - name: Include the audit-logrotate role
       import_role:
