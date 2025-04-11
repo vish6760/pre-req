@@ -46,7 +46,7 @@
 
 - name: Copy the pre-staged sysctl.conf file
   copy:
-    src: "{{ playbook_dir }}/../files/staged-sysctl.conf"
+    src: "roles/files/staged-sysctl"
     dest: /etc/sysctl.conf
     remote_src: no
 
@@ -85,17 +85,22 @@
     replace: '0'
 
 - name: Check if audit backlog limit is still set to 8192
-  shell: grep -q '^-b 8192' /etc/audit/rules.d/audit.rules
+  shell: grep '^-b 8192' /etc/audit/rules.d/audit.rules
   register: audit_limit_check
   ignore_errors: true
+  check_mode: no
   changed_when: false
+
+- name: Debug audit_limit_check result
+  debug:
+    var: audit_limit_check
 
 - name: Update audit backlog limit from 8192 to 16384 in audit.rules
   replace:
     path: /etc/audit/rules.d/audit.rules
     regexp: '^-b 8192'
     replace: '-b 16384'
-  when: audit_limit_check.rc == 0
+  when: audit_limit_check is defined and audit_limit_check.rc == 0
 
 - name: Comment out update_etc_hosts in cloud.cfg
   replace:

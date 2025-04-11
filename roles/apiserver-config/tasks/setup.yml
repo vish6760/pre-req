@@ -10,7 +10,7 @@
 
 - name: Copy encryption-provider.yaml for etcd encryption
   copy:
-    src: "{{ playbook_dir }}/../files/staged-encryption-provider.yaml"
+    src: "roles/files/staged-encryption-provider"
     dest: /var/opt/pf9/kube/apiserver-config/encryption-provider.yaml
     owner: pf9
     group: pf9group
@@ -19,7 +19,7 @@
 
 - name: Copy audit-policy.yaml for audit log configuration
   copy:
-    src: "{{ playbook_dir }}/../files/staged-audit-policy.yaml"
+    src: "roles/files/staged-audit-policy"
     dest: /var/opt/pf9/kube/apiserver-config/audit-policy.yaml
     owner: pf9
     group: pf9group

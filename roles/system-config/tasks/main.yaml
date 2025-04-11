@@ -1,7 +1,0 @@
-# main.yaml
----
-- name: Include setup tasks
-  include_tasks: setup.yaml
-
-- name: Include report tasks
-  include_tasks: report.yaml

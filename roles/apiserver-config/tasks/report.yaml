@@ -1,9 +1,0 @@
----
-# Optional reporting or verification tasks for apiserver-config role
-- name: List contents of apiserver-config directory
-  command: ls -l /var/opt/pf9/kube/apiserver-config
-  register: config_dir_contents
-
-- name: Display contents of /var/opt/pf9/kube/apiserver-config
-  debug:
-    msg: "{{ config_dir_contents.stdout_lines }}"

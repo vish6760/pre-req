@@ -1,7 +1,0 @@
-# main.yaml
----
-- name: Resize disk setup tasks
-  import_tasks: setup.yaml
-
-- name: Write disk resize report
-  import_tasks: report.yaml
