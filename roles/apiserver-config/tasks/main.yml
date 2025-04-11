@@ -1,0 +1,7 @@
+---
+# apiserver-config role
+- name: Set up API server config files for etcd encryption and audit.
+  import_tasks: "roles/apiserver-config/tasks/setup.yml"
+  
+- name: Verification tasks for apiserver-config role
+  import_tasks: "roles/apiserver-config/tasks/report.yml"

@@ -1,0 +1,31 @@
+---
+# Task segment to handle reporting and reboot control
+- name: Verify if updates were successful
+  command: apt list --upgradable
+  register: apt_upgradable
+  changed_when: false
+
+- name: Show packages that are still upgradable
+  debug:
+    var: apt_upgradable.stdout
+
+- name: Prompt user for reboot
+  pause:
+    prompt: "All packages have been updated. Do you want to reboot this system now? (yes/no)"
+  register: reboot_input
+
+- name: Print user input
+  debug:
+    var: reboot_input.user_input
+
+- name: Reboot the system
+  ansible.builtin.reboot:
+    msg: "Reboot initiated after package update."
+    pre_reboot_delay: 5
+    reboot_timeout: 600
+  when: reboot_input.user_input | lower in ['yes', 'y']
+
+- name: Reboot skipped
+  debug:
+    msg: "Reboot skipped based on user input."
+  when: reboot_input.user_input | lower not in ['yes', 'y']

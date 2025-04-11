@@ -1,0 +1,27 @@
+---
+# Set up API server config directory and required YAMLs
+- name: Ensure the directory /var/opt/pf9/kube/apiserver-config exists
+  file:
+    path: /var/opt/pf9/kube/apiserver-config
+    state: directory
+    owner: pf9
+    group: pf9group
+    mode: '0755'
+
+- name: Copy encryption-provider.yaml for etcd encryption
+  copy:
+    src: "{{ playbook_dir }}/../files/staged-encryption-provider.yaml"
+    dest: /var/opt/pf9/kube/apiserver-config/encryption-provider.yaml
+    owner: pf9
+    group: pf9group
+    mode: '0644'
+    remote_src: no
+
+- name: Copy audit-policy.yaml for audit log configuration
+  copy:
+    src: "{{ playbook_dir }}/../files/staged-audit-policy.yaml"
+    dest: /var/opt/pf9/kube/apiserver-config/audit-policy.yaml
+    owner: pf9
+    group: pf9group
+    mode: '0644'
+    remote_src: no

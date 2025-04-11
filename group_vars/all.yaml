@@ -1,0 +1,9 @@
+# group_vars/all.yml
+---
+report_dir: /var/log/pre-req
+backup_date: "{{ lookup('pipe', 'date +%F') }}"
+vg_name: "ubuntu-vg"
+lv_name: "ubuntu-lv"
+lv_path: "/dev/{{ vg_name }}/{{ lv_name }}"
+disk_device: "/dev/vda"
+partition_number: 3

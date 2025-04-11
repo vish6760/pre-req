@@ -1,0 +1,7 @@
+
+---
+- name: Update the packages
+  include_tasks: "roles/package-update/tasks/setup.yml"
+  
+- name: Handle reporting and reboot control
+  include_tasks: "roles/package-update/tasks/report.yml"

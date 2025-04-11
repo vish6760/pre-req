@@ -1,0 +1,8 @@
+
+---
+# Main task entry for final-report role
+- name: Read the configuration
+  import_tasks: "roles/final-report/tasks/gather_config.yml"
+
+- name: Record the final report of the configuration
+  import_tasks: "roles/final-report/tasks/report.yml"

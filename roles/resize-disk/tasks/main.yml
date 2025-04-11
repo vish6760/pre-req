@@ -1,0 +1,7 @@
+# main.yaml
+---
+- name: Resize disk setup tasks
+  import_tasks: "roles/resize-disk/tasks/setup.yml"
+
+- name: Write disk resize report
+  import_tasks: "roles/resize-disk/tasks/report.yml"

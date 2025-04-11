@@ -1,0 +1,37 @@
+---
+- name: Set combined report summary
+  set_fact:
+      summary_output: |
+        ======== /etc/hosts ========
+        {{ hosts_out.stdout }}
+
+        ======== /etc/sysctl.conf ========
+        {{ sysctl_out.stdout }}
+
+        ======== /etc/resolv.conf ========
+        {{ resolv_out.stdout }}
+
+        ======== /etc/environment ========
+        {{ env_out.stdout }}
+
+        ======== cloud.cfg update_etc_hosts ========
+        {{ cloud_cfg_out.stdout }}
+
+        ======== lsblk -o NAME,SIZE ========
+        {{ vda_check.stdout }}
+
+        ======== auto_upgrades ========
+        {{ auto_upgrades_check.stdout }}
+
+        ======== grub_net_ifnames ========
+        {{ grub_net_ifnames_check.stdout }}
+
+- name: Print final summary report
+  debug:
+    msg: "{{ summary_output }}"
+
+- name: Write summary report to file on remote server
+  copy:
+    dest: "{{ report_dir }}/{{ inventory_hostname }}_config_summary.txt"
+    content: "{{ summary_output }}"
+    mode: '0644'
