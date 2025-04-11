@@ -1,11 +1,40 @@
+
 ---
-- name: Execute All System Configuration Roles
+- name: Complete the Pre-req before onboarding the nodes in management cluster
   hosts: all
   become: yes
-  roles:
-    - { role: package-update, tags: ['package-update'] }
-    - { role: system-config, tags: ['system-config'] }
-    - { role: resize-disk, tags: ['resize-disk'] }
-    - { role: audit-logrotate, tags: ['audit-logrotate'] }
-    - { role: apiserver-config, tags: ['apiserver-config'] }
-    - { role: final-report, tags: ['final-report'] }
+  tasks:
+    - name: Include the system-config role
+      import_role:
+        name: system-config
+      tags: system-config
+
+    - name: Include the resize-disk role
+      import_role:
+        name: resize-disk
+      tags: resize-disk
+
+    - name: Include the package-update role
+      import_role:
+        name: package-update
+      tags: package-update
+
+    - name: Include the resize-disk role
+      import_role:
+        name: resize-disk
+      tags: resize-disk
+
+    - name: Include the audit-logrotate role
+      import_role:
+        name: audit-logrotate
+      tags: audit-logrotate
+
+    - name: Include the final-report role
+      import_role:
+        name: final-report
+      tags: final-report
+
+    - name: Include the apiserver-config role
+      import_role:
+        name: apiserver-config
+      tags: apiserver-config
